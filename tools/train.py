@@ -55,6 +55,11 @@ def train(args):
         dataloaders = prepare_data_MMD()
         num_domains_bn = 2
 
+    elif args.method == 'soft_MMD':
+        from solver.soft_mmd_solver import SMMDSolver as Solver
+        dataloaders = prepare_data_MMD()
+        num_domains_bn = 2
+
     elif args.method == 'SingleDomainSource':
         from solver.single_domain_solver import SingleDomainSolver as Solver
         dataloaders = prepare_data_SingleDomainSource()
@@ -92,13 +97,17 @@ def train(args):
                  dropout_ratio=cfg.TRAIN.DROPOUT_RATIO,
                  fc_hidden_dims=cfg.MODEL.FC_HIDDEN_DIMS, 
                  num_domains_bn=num_domains_bn)
+    
+    dpn = model.DPN(4*cfg.DATASET.NUM_CLASSES)
 
     net = torch.nn.DataParallel(net)
+    dpn = torch.nn.DataParallel(dpn)
     if torch.cuda.is_available():
        net.cuda()
+       dpn.cuda()
 
     # initialize solver
-    train_solver = Solver(net, dataloaders, bn_domain_map=bn_domain_map, resume=resume_dict)
+    train_solver = Solver(net, dpn, dataloaders, bn_domain_map=bn_domain_map, resume=resume_dict)
 
     # train 
     train_solver.solve()
