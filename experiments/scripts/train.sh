@@ -19,5 +19,5 @@ then
 fi
 mkdir -p ${out_dir}
 
-CUDA_VISIBLE_DEVICES=${gpus} python ./tools/train.py --cfg ${cfg} \
+CUDA_VISIBLE_DEVICES=${gpus} python3 ./tools/train.py --cfg ${cfg} \
            --method ${3} --exp_name ${4} 2>&1 | tee ${out_dir}/log.txt

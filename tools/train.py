@@ -57,7 +57,7 @@ def train(args):
 
     elif args.method == 'soft_MMD':
         from solver.soft_mmd_solver import SMMDSolver as Solver
-        dataloaders = prepare_data_MMD()
+        dataloaders = prepare_data_CAN()
         num_domains_bn = 2
 
     elif args.method == 'SingleDomainSource':
