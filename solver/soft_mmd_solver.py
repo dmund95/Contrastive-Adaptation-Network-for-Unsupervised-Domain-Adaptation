@@ -13,7 +13,7 @@ import torch.functional as F
 
 class SMMDSolver(BaseSolver):
     def __init__(self, net, dpn, dataloader, bn_domain_map={}, resume=None, **kwargs):
-        super(SMMDSolver, self).__init__(net, dataloader, \
+        super(SMMDSolver, self).__init__(net, dpn, dataloader, \
                       bn_domain_map=bn_domain_map, resume=resume, **kwargs)
 
         if len(self.bn_domain_map) == 0:
@@ -259,6 +259,7 @@ class SMMDSolver(BaseSolver):
                 source_samples_cls, source_nums_cls, \
                        target_samples_cls, target_nums_cls, source_sample_labels = self.CAS()
 
+                source_sample_labels = torch.cat(source_sample_labels, dim=0).cuda()
                 # 2) forward and compute the loss
                 source_cls_concat = torch.cat([to_cuda(samples) 
                             for samples in source_samples_cls], dim=0)
@@ -274,7 +275,7 @@ class SMMDSolver(BaseSolver):
                 feats_toalign_S = self.prepare_feats(feats_source)
                 feats_toalign_T = self.prepare_feats(feats_target) 
 
-                domain_logits = self.dpn(feats_source["feats"])
+                domain_logits = self.dpn(feats_source["feat"])
                 domain_logits = domain_logits.reshape(domain_logits.shape[0],self.opt.DATASET.NUM_CLASSES,-1)
                 domain_prob_s = torch.zeros(domain_logits.shape,dtype=torch.float32).cuda()
 

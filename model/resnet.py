@@ -1,7 +1,7 @@
 # modified from torchvision
 import torch.nn as nn
 from torch.nn import BatchNorm2d
-from torchvision.models import utils as vutils
+from torch.utils.model_zoo import load_url as load_state_dict_from_url
 from .domain_specific_module import BatchNormDomain
 from . import utils as model_utils
 
@@ -221,7 +221,7 @@ def _resnet(arch, block, layers, num_domains, pretrained, progress, **kwargs):
     model = ResNet(block, layers, num_domains=num_domains, **kwargs)
     BN2BNDomain = True
     if pretrained:
-        state_dict = vutils.load_state_dict_from_url(model_urls[arch],
+        state_dict = load_state_dict_from_url(model_urls[arch],
                     progress=progress)
         BN2BNDomain = True
     else:

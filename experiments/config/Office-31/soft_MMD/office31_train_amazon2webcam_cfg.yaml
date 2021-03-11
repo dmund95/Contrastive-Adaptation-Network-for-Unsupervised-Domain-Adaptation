@@ -1,10 +1,10 @@
 DATASET:
   NUM_CLASSES: 31
-  DATAROOT: '/localdata/office/data/office_sample/'
-  SOURCE_NAME: 'dslr'
-  TARGET_NAME: 'amazon'
+  DATAROOT: './experiments/dataset/Office-31'
+  SOURCE_NAME: 'amazon'
+  TARGET_NAME: 'webcam'
 
-MODEL:
+MODEL: 
   FEATURE_EXTRACTOR: 'resnet50'
 
 TRAIN:
@@ -17,7 +17,7 @@ CLUSTERING:
   TARGET_BATCH_SIZE: 100
   SOURCE_BATCH_SIZE: 100
   BUDGET: 1000
-  FILTERING_THRESHOLD: 1.0
+  FILTERING_THRESHOLD: 0.05
 
 CDD:
   LOSS_WEIGHT: 0.3

@@ -1,7 +1,7 @@
 DATASET:
   NUM_CLASSES: 31
-  DATAROOT: '/localdata/office/data/office_sample/'
-  SOURCE_NAME: 'dslr'
+  DATAROOT: './experiments/dataset/Office-31'
+  SOURCE_NAME: 'webcam'
   TARGET_NAME: 'amazon'
 
 MODEL:
