@@ -32,7 +32,7 @@ class DPN(nn.Module):
                 num_domains_bn=2, dropout_ratio=(0.5,)):
         super(DPN, self).__init__()
 
-        self.fc5 = nn.Linear(512, 128)
+        self.fc5 = nn.Linear(2048, 128)
         self.bn_fc5 = nn.BatchNorm1d(128)
         self.dp_layer = nn.Linear(128, num_domains)
         self.relu = nn.ReLU(inplace=True)

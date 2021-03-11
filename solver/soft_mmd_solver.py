@@ -9,7 +9,7 @@ from discrepancy.soft_mmd import SMMD
 from math import ceil as ceil
 from .base_solver import BaseSolver
 from copy import deepcopy
-import torch.functional as F
+import torch.nn.functional as F
 
 class SMMDSolver(BaseSolver):
     def __init__(self, net, dpn, dataloader, bn_domain_map={}, resume=None, **kwargs):
