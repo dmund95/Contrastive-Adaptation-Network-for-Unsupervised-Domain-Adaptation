@@ -11,8 +11,8 @@ from .base_solver import BaseSolver
 from copy import deepcopy
 
 class CANSolver(BaseSolver):
-    def __init__(self, net, dataloader, bn_domain_map={}, resume=None, **kwargs):
-        super(CANSolver, self).__init__(net, dataloader, \
+    def __init__(self, net, dpn, dataloader, bn_domain_map={}, resume=None, **kwargs):
+        super(CANSolver, self).__init__(net, dpn, dataloader, \
                       bn_domain_map=bn_domain_map, resume=resume, **kwargs)
 
         if len(self.bn_domain_map) == 0:

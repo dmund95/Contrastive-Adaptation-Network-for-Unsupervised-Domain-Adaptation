@@ -107,13 +107,7 @@ def train(args):
        dpn.cuda()
 
     # initialize solver
-    if args.method == 'CAN': 
-        train_solver = Solver(net, dataloaders, bn_domain_map=bn_domain_map, resume=resume_dict)
-    elif args.method == 'soft_MMD':
-        train_solver = Solver(net, dpn, dataloaders, bn_domain_map=bn_domain_map, resume=resume_dict)
-    else:
-        raise NotImplementedError("Currently don't support the specified method: %s." 
-                                 % args.method)
+    train_solver = Solver(net, dpn, dataloaders, bn_domain_map=bn_domain_map, resume=resume_dict)
 
     # train 
     train_solver.solve()
