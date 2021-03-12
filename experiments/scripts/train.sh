@@ -1,9 +1,9 @@
 #!/bin/bash
 
 export PYTHONPATH="`pwd`:${PYTHONPATH}"
-if [ $# != 4 ]
+if [ $# != 5 ]
 then 
-  echo "Please specify 1) cfg; 2) gpus; 3) method; 4) exp_name."
+  echo "Please specify 1) cfg; 2) gpus; 3) method; 4) exp_name; 5) clustering_wt."
   exit
 fi
 

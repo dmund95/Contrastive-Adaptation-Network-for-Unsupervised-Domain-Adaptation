@@ -62,7 +62,7 @@ class BaseSolver:
         opt = self.opt
         param_groups = solver_utils.set_param_groups(self.net, 
 		dict({'FC': opt.TRAIN.LR_MULT})) + solver_utils.set_param_groups(self.dpn, 
- 		dict({'FC': opt.TRAIN.LR_MULT/10}))
+ 		dict({'FC': opt.TRAIN.LR_MULT}))
 
         assert opt.TRAIN.OPTIMIZER in ["Adam", "SGD"], \
             "Currently do not support your specified optimizer."
