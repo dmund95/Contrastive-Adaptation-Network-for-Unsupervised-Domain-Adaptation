@@ -200,8 +200,11 @@ class CDD(object):
         if not self.intra_only:
             inter_mask = to_cuda((torch.ones([num_classes, num_classes]) \
                     - torch.eye(num_classes)).type(torch.ByteTensor))
-            inter_mmds = torch.masked_select(mmds, inter_mask)
-            inter = torch.sum(inter_mmds) / (self.num_classes * (self.num_classes - 1))
+            # inter_mmds = torch.masked_select(mmds, inter_mask)
+            # inter = torch.sum(inter_mmds) / (self.num_classes * (self.num_classes - 1))
+            kernel_dist_st_nondiag = torch.masked_select(kernel_dist_st, inter_mask)
+            ss_tt_diag = torch.diag(kernel_dist_ss + kernel_dist_tt, 0)
+            inter = torch.sum(ss_tt_diag) * (self.num_classes-1) - 2 * torch.sum(kernel_dist_st_nondiag)
 
         cdd = intra if inter is None else intra - inter
         return {'cdd': cdd, 'intra': intra, 'inter': inter}

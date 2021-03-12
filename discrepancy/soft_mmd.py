@@ -199,7 +199,7 @@ class SMMD(object):
 
         num_classes = len(nums_S)
         num_domains = domain_probs.size(2)
-        assert num_classes == domain_probs.size(1)
+        # assert num_classes == domain_probs.size(1)
 
         proper_labels = self.get_proper_labels(nums_S)
         domain_probs_simple = domain_probs[torch.arange(domain_probs.size()[0]), proper_labels] # Ns x K
@@ -252,7 +252,7 @@ class SMMD(object):
         kernel_dist_ss_soft = []
         kernel_dist_tt_soft = []
         for c in range(num_classes):
-            kernel_dist_ss = self.kernel_layer_aggregation(dist_layers, gamma_layers, 'ss', c) # N_c x N_c
+            kernel_dist_ss = self.kernel_layer_aggregation(dist_layers, gamma_layers, 'ss', c) # num_classes x N_c x N_c
             paired_dp_ss_c = paired_domain_probs_ss_classwise[c] # N_c x N_c x K
 
             kernel_dist_ss_expand = kernel_dist_ss.unsqueeze(2).expand(kernel_dist_ss.size()[0], kernel_dist_ss.size()[1], num_domains) # N_c x N_c x K
