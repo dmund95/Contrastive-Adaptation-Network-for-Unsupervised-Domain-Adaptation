@@ -100,7 +100,6 @@ class SMMD(object):
         normal_mask = 1.0 - upper_mask - lower_mask
         dist = normal_mask * dist + upper_mask * 1e5 + lower_mask * 1e-5
         kernel_val = torch.sum(torch.exp(-1.0 * dist), dim=0)
-        assert kernel_val.size() == dist.size()
         return kernel_val
 
     def kernel_layer_aggregation(self, dist_layers, gamma_layers, key, category=None):

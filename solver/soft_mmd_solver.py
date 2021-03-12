@@ -301,6 +301,8 @@ class SMMDSolver(BaseSolver):
                 total_loss = cdd_loss*self.opt.CDD.LOSS_WEIGHT + entropy_loss + kl_loss
                 total_loss.backward()
 
+                print("Entropy loss:", entropy_loss, "KL_loss:", kl_loss)
+
                 cdd_loss_iter += total_loss
                 loss += total_loss
 
