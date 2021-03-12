@@ -25,14 +25,32 @@ class SMMD(object):
 
     def split_paired_dp_classwise(self, paired_dp, nums):
         num_classes = len(nums)
-        start = end = 0
-        ans_list = []
-        for c in range(num_classes):
-            start = end
-            end = start + nums[c]
-            paired_dp_c = paired_dp[start:end, start:end]
-            ans_list += [paired_dp_c]
-        return ans_list
+        row_start = row_end = 0
+        ans = []
+
+        # ans_list = []
+        # for c in range(num_classes):
+        #     start = end
+        #     end = start + nums[c]
+        #     paired_dp_c = paired_dp[start:end, start:end]
+        #     ans_list += [paired_dp_c]
+        # return ans_list
+
+        for row in range(num_classes):
+            row_start = row_end
+            row_end = row_start + nums[row]
+
+            col_start = col_end = 0
+            paired_interaction_row = []
+            for col in range(num_classes):
+                col_start = col_end
+                col_end = col_start + nums[col]
+                paired_interaction_row.append(paired_dp.narrow(0, row_start, nums[row]).narrow(1, col_start, nums[col]))
+            
+            paired_interaction_row = torch.stack(paired_interaction_row, dim=0)
+            ans.append(paired_interaction_row)
+        
+        return ans
 
     def gamma_estimation(self, dist):
         dist_sum = torch.sum(dist['ss']) + torch.sum(dist['tt']) + \
@@ -247,43 +265,55 @@ class SMMD(object):
         domain_probs_simple_expand = domain_probs_simple.unsqueeze(1).expand(kernel_dist_st.size()[0], kernel_dist_st.size()[1], num_domains) # Ns x Nt x K
 
         kernel_dist_st_soft = kernel_dist_st_expand * domain_probs_simple_expand
-        kernel_dist_st_soft = self.patch_mean(nums_S, nums_T, kernel_dist_st_soft, domain_probs_simple_expand)
+        kernel_dist_st_soft = self.patch_mean(nums_S, nums_T, kernel_dist_st_soft, domain_probs_simple_expand) # num_classes x num_classes x K
 
         kernel_dist_ss_soft = []
         kernel_dist_tt_soft = []
         for c in range(num_classes):
             kernel_dist_ss = self.kernel_layer_aggregation(dist_layers, gamma_layers, 'ss', c) # num_classes x N_c x N_c
-            paired_dp_ss_c = paired_domain_probs_ss_classwise[c] # N_c x N_c x K
+            paired_dp_ss_c = paired_domain_probs_ss_classwise[c] # num_classes x N_c x N_c x K
 
-            kernel_dist_ss_expand = kernel_dist_ss.unsqueeze(2).expand(kernel_dist_ss.size()[0], kernel_dist_ss.size()[1], num_domains) # N_c x N_c x K
+            kernel_dist_ss_expand = kernel_dist_ss.unsqueeze(3).expand(kernel_dist_ss.size()[0], kernel_dist_ss.size()[1], kernel_dist_ss.size()[2], num_domains) # num_classes x N_c x N_c x K
 
-            temp_mult = kernel_dist_ss_expand * paired_dp_ss_c
-            kernel_dist_ss_soft += [torch.sum(temp_mult.view(num_classes, num_domains, -1), dim=2) / torch.sum(paired_dp_ss_c.view(num_classes, num_domains, -1), dim=2)]
+            temp_mult = kernel_dist_ss_expand * paired_dp_ss_c # num_classes x N_c x N_c x K
+            kernel_dist_ss_soft += [torch.sum(temp_mult.view(num_classes, -1, num_domains), dim=1) / torch.sum(paired_dp_ss_c.view(num_classes, -1, num_domains), dim=1)] # list of num_classes x K
 
             temp_tt = torch.mean(self.kernel_layer_aggregation(dist_layers, gamma_layers, 'tt', c).view(num_classes, -1), dim=1)
 
-            kernel_dist_tt_soft += [temp_tt.unsqueeze(1).expand(num_classes, num_domains)]
+            kernel_dist_tt_soft += [temp_tt.unsqueeze(1).expand(num_classes, num_domains)] # list of num_classes x K
 
         kernel_dist_ss_soft = torch.stack(kernel_dist_ss_soft, dim=0)
         kernel_dist_tt_soft = torch.stack(kernel_dist_tt_soft, dim=0).transpose(1, 0)
 
-        mmds = kernel_dist_ss_soft + kernel_dist_tt_soft - 2 * kernel_dist_st_soft
+        mmds = kernel_dist_ss_soft + kernel_dist_tt_soft - 2 * kernel_dist_st_soft # num_classes x num_classes x K
 
-        intra = to_cuda(torch.zeros(1))
-        inter = to_cuda(torch.zeros(1))
+        nc2_intra = to_cuda(torch.zeros(1))
+        nc2_inter = to_cuda(torch.zeros(1))
+        nc1_intra = to_cuda(torch.zeros(1))
+        nc1_inter = to_cuda(torch.zeros(1))
 
         for i in range(num_classes):
             for j in range(num_classes):
                 if i == j:
-                    intra += torch.mean(mmds[i,j])
+                    nc1_intra += torch.mean(kernel_dist_ss_soft[i,i] + kernel_dist_tt_soft[j,j] - 2 * kernel_dist_st_soft[i,j])
                 else:
-                    inter += torch.mean(mmds[i,j])
+                    nc1_inter += torch.mean(kernel_dist_ss_soft[i,i] + kernel_dist_tt_soft[j,j] - 2 * kernel_dist_st_soft[i,j])
         
-        intra = intra / self.num_classes
-        inter = inter / (self.num_classes * (self.num_classes - 1))
+        for i in range(num_classes):
+            for j in range(num_classes):
+                if i==j:
+                    nc2_intra += torch.mean(kernel_dist_ss_soft[i,i] + kernel_dist_ss_soft[j,j] - 2 * kernel_dist_ss_soft[i,j])
+                else:
+                    nc2_inter += torch.mean(kernel_dist_ss_soft[i,i] + kernel_dist_ss_soft[j,j] - 2 * kernel_dist_ss_soft[i,j])
 
-        cdd = intra if self.intra_only else intra - inter
-        return {'cdd': cdd, 'intra': intra, 'inter': inter}
+        nc1_intra = nc1_intra / (self.num_classes)
+        nc1_inter = nc1_inter / (self.num_classes * (self.num_classes - 1))
+
+        nc2_intra = nc2_intra /(self.num_classes)
+        nc2_inter = nc2_inter / (self.num_classes * (self.num_classes - 1))
+
+        cdd = nc1_intra + nc2_intra if self.intra_only else nc1_intra + nc2_intra - nc1_inter - nc2_inter
+        return {'cdd': cdd, 'intra': nc1_intra + nc2_intra, 'inter': nc1_inter + nc2_inter}
 
         # intra_mmds = torch.diag(mmds, 0)
         # intra = torch.sum(intra_mmds) / self.num_classes
