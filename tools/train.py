@@ -32,6 +32,8 @@ def parse_args():
     parser.add_argument('--exp_name', dest='exp_name',
                         help='the experiment name', 
                         default='exp', type=str)
+    parser.add_argument('--clustering_wt', type=float, default=0.01, 
+                        metavar='LR', help='KL_wt (default: 0.01)')
 
 
     if len(sys.argv) == 1:
@@ -107,7 +109,7 @@ def train(args):
        dpn.cuda()
 
     # initialize solver
-    train_solver = Solver(net, dpn, dataloaders, bn_domain_map=bn_domain_map, resume=resume_dict)
+    train_solver = Solver(net, dpn, dataloaders, args.clustering_wt, bn_domain_map=bn_domain_map, resume=resume_dict)
 
     # train 
     train_solver.solve()

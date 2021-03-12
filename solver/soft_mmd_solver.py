@@ -12,8 +12,8 @@ from copy import deepcopy
 import torch.nn.functional as F
 
 class SMMDSolver(BaseSolver):
-    def __init__(self, net, dpn, dataloader, bn_domain_map={}, resume=None, **kwargs):
-        super(SMMDSolver, self).__init__(net, dpn, dataloader, \
+    def __init__(self, net, dpn, dataloader, clustering_wt, bn_domain_map={}, resume=None, **kwargs):
+        super(SMMDSolver, self).__init__(net, dpn, dataloader, clustering_wt, \
                       bn_domain_map=bn_domain_map, resume=resume, **kwargs)
 
         if len(self.bn_domain_map) == 0:
@@ -35,6 +35,7 @@ class SMMDSolver(BaseSolver):
                                         self.opt.CLUSTERING.BUDGET)
 
         self.clustered_target_samples = {}
+        self.clustering_wt = clustering_wt
 
     def complete_training(self):
         if self.loop >= self.opt.TRAIN.MAX_LOOP:
@@ -292,8 +293,8 @@ class SMMDSolver(BaseSolver):
                     domain_prob_s[indexes,i] = domain_prob_s_cl
                     num_active_classes+=1
 
-                entropy_loss = entropy_loss * 0.01 / num_active_classes
-                kl_loss = kl_loss * 0.01 / num_active_classes
+                entropy_loss = entropy_loss * self.clustering_wt / num_active_classes
+                kl_loss = kl_loss * self.clustering_wt / num_active_classes
 
                 cdd_loss = self.cdd.forward(feats_toalign_S, feats_toalign_T, 
                                source_nums_cls, target_nums_cls, domain_prob_s, source_sample_labels)[self.discrepancy_key]

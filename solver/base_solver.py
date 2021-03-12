@@ -8,7 +8,7 @@ from math import ceil as ceil
 from config.config import cfg
 
 class BaseSolver:
-    def __init__(self, net, dpn, dataloader, bn_domain_map={}, resume=None, **kwargs):
+    def __init__(self, net, dpn, dataloader, clustering_wt, bn_domain_map={}, resume=None, **kwargs):
         self.opt = cfg
         self.source_name = self.opt.DATASET.SOURCE_NAME
         self.target_name = self.opt.DATASET.TARGET_NAME

@@ -307,11 +307,11 @@ class SMMD(object):
                 else:
                     nc2_inter += torch.mean(kernel_dist_ss_soft[i,i] + kernel_dist_ss_soft[j,j] - 2 * kernel_dist_ss_soft[i,j])
 
-        nc1_intra = nc1_intra / (self.num_classes)
-        nc1_inter = nc1_inter / (self.num_classes * (self.num_classes - 1))
+        nc1_intra = nc1_intra[0] / (self.num_classes)
+        nc1_inter = nc1_inter[0] / (self.num_classes * (self.num_classes - 1))
 
-        nc2_intra = nc2_intra /(self.num_classes)
-        nc2_inter = nc2_inter / (self.num_classes * (self.num_classes - 1))
+        nc2_intra = nc2_intra[0] /(self.num_classes)
+        nc2_inter = nc2_inter[0] / (self.num_classes * (self.num_classes - 1))
 
         cdd = nc1_intra + nc2_intra if self.intra_only else nc1_intra + nc2_intra - nc1_inter - nc2_inter
         return {'cdd': cdd, 'intra': nc1_intra + nc2_intra, 'inter': nc1_inter + nc2_inter}
