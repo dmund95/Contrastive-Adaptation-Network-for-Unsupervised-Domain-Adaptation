@@ -210,7 +210,7 @@ class SMMD(object):
             ans.extend([c]*nums[c])
         return ans
 
-    def forward(self, source, target, nums_S, nums_T, domain_probs):
+    def forward(self, source, target, nums_S, nums_T, domain_probs, source_sample_labels):
         assert(len(nums_S) == len(nums_T)), \
              "The number of classes for source (%d) and target (%d) should be the same." \
              % (len(nums_S), len(nums_T))
@@ -219,7 +219,8 @@ class SMMD(object):
         num_domains = domain_probs.size(2)
         # assert num_classes == domain_probs.size(1)
 
-        proper_labels = self.get_proper_labels(nums_S)
+        # proper_labels = self.get_proper_labels(nums_S)
+        proper_labels = source_sample_labels
         domain_probs_simple = domain_probs[torch.arange(domain_probs.size()[0]), proper_labels] # Ns x K
         paired_domain_probs = self.compute_paired_domain_prob(domain_probs_simple) # Ns x Ns x K
 

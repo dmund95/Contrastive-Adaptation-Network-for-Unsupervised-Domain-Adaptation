@@ -296,7 +296,7 @@ class SMMDSolver(BaseSolver):
                 kl_loss = kl_loss * 0.01 / num_active_classes
 
                 cdd_loss = self.cdd.forward(feats_toalign_S, feats_toalign_T, 
-                               source_nums_cls, target_nums_cls, domain_prob_s)[self.discrepancy_key]
+                               source_nums_cls, target_nums_cls, domain_prob_s, source_sample_labels)[self.discrepancy_key]
                 
                 total_loss = cdd_loss*self.opt.CDD.LOSS_WEIGHT + entropy_loss + kl_loss
                 total_loss.backward()
