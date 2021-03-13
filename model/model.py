@@ -32,13 +32,19 @@ class DPN(nn.Module):
                 num_domains_bn=2, dropout_ratio=(0.5,)):
         super(DPN, self).__init__()
 
+        self.feature_extractor = utils.find_class_by_name(
+               feature_extractor, backbones)(pretrained=fx_pretrained, 
+               frozen=frozen, num_domains=num_domains_bn)
+
         self.fc5 = nn.Linear(2048, 128)
         self.bn_fc5 = nn.BatchNorm1d(128)
         self.dp_layer = nn.Linear(128, num_domains)
         self.relu = nn.ReLU(inplace=True)
 
     def forward(self, x, reverse=False):
-        x = self.relu(self.bn_fc5(self.fc5(x)))
+        feat = self.feature_extractor(x).view(-1, self.in_dim)
+
+        x = self.relu(self.bn_fc5(self.fc5(feat)))
 
         dp_pred = self.dp_layer(x)
 

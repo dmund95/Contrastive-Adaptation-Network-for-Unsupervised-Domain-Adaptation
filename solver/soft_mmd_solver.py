@@ -276,7 +276,7 @@ class SMMDSolver(BaseSolver):
                 feats_toalign_S = self.prepare_feats(feats_source)
                 feats_toalign_T = self.prepare_feats(feats_target) 
 
-                domain_logits = self.dpn(feats_source["feat"])
+                domain_logits = self.dpn(source_cls_concat)
                 domain_logits = domain_logits.reshape(domain_logits.shape[0],self.opt.DATASET.NUM_CLASSES,-1)
                 domain_prob_s = torch.zeros(domain_logits.shape,dtype=torch.float32).cuda()
 
